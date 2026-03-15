@@ -1,0 +1,25 @@
+services:
+  api:
+    image: clue/json-server
+    container_name: json-api
+    volumes:
+      - ./api/db.json:/data/db.json
+    ports:
+      - "8000:80"
+    command: --watch /data/db.json --host 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/posts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: react-app
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://api:80
+    depends_on:
+      api:
+        condition: service_healthy
